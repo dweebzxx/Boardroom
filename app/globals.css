@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 17%;
+    --foreground: 42 52% 85%;
+    --card: 211 35% 35%;
+    --card-foreground: 42 52% 85%;
+    --popover: 0 0% 17%;
+    --popover-foreground: 42 52% 85%;
+    --primary: 42 68% 53%;
+    --primary-foreground: 0 0% 17%;
+    --secondary: 211 35% 35%;
+    --secondary-foreground: 42 52% 85%;
+    --muted: 0 0% 22%;
+    --muted-foreground: 42 30% 70%;
+    --accent: 42 68% 53%;
+    --accent-foreground: 0 0% 17%;
+    --destructive: 4 62% 40%;
+    --destructive-foreground: 42 52% 85%;
+    --border: 0 0% 25%;
+    --input: 0 0% 22%;
+    --ring: 42 68% 53%;
+    --chart-1: 25 100% 40%;
+    --chart-2: 185 100% 17%;
+    --chart-3: 174 47% 47%;
+    --chart-4: 42 68% 53%;
+    --chart-5: 4 62% 40%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-vintage-charcoal text-vintage-cream antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .scrollbar-vintage {
+    scrollbar-width: thin;
+    scrollbar-color: #3A577A #2C2C2C;
+  }
+  .scrollbar-vintage::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-vintage::-webkit-scrollbar-track {
+    background: #2C2C2C;
+  }
+  .scrollbar-vintage::-webkit-scrollbar-thumb {
+    background: #3A577A;
+    border-radius: 3px;
+  }
+  .scrollbar-vintage::-webkit-scrollbar-thumb:hover {
+    background: #4a6a8a;
+  }
+}
