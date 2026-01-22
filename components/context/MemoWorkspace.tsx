@@ -12,14 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ScheduleItem, Memo } from '@/lib/types';
-import { saveMemo } from '@/lib/queries';
+import type { ScheduleItem, ExecutiveBrief } from '@/lib/types';
+import { saveExecutiveBrief } from '@/lib/queries';
 
 interface MemoWorkspaceProps {
   courseId: string;
   scheduleItems: ScheduleItem[];
-  memo: Memo | null;
-  onMemoUpdate: (memo: Memo) => void;
+  memo: ExecutiveBrief | null;
+  onMemoUpdate: (memo: ExecutiveBrief) => void;
 }
 
 export function MemoWorkspace({
@@ -48,7 +48,7 @@ export function MemoWorkspace({
       setIsSaving(true);
       const topicToSave = newTopic === '__none__' ? null : newTopic;
       try {
-        const savedMemo = await saveMemo(
+        const savedMemo = await saveExecutiveBrief(
           courseId,
           newContent,
           topicToSave,
@@ -57,7 +57,7 @@ export function MemoWorkspace({
         onMemoUpdate(savedMemo);
         setLastSaved(new Date());
       } catch (error) {
-        console.error('Failed to save memo:', error);
+        console.error('Failed to save executive brief:', error);
       } finally {
         setIsSaving(false);
       }
@@ -85,7 +85,7 @@ export function MemoWorkspace({
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-vintage-cream font-serif">
             <FileEdit className="w-5 h-5 text-vintage-mustard" />
-            Executive Memo
+            Executive Brief
           </CardTitle>
           <div className="flex items-center gap-2 text-xs text-vintage-cream/50">
             {isSaving ? (
@@ -126,7 +126,7 @@ export function MemoWorkspace({
         <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Draft your executive memo here. Synthesize insights from the boardroom debate, outline key decisions, and document your strategic rationale..."
+          placeholder="Draft your executive brief here. Synthesize insights from the boardroom debate, outline key decisions, and document your strategic rationale..."
           className={cn(
             'flex-1 min-h-[150px] resize-none',
             'bg-vintage-charcoal/50 border-vintage-slate-blue/30',

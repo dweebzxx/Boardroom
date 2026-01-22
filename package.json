@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "npm run lint && npm run typecheck",
+    "test:build": "npm run build"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.13",

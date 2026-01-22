@@ -1,59 +1,67 @@
-"use server";
+'use client';
 
-import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
+import type { ChatMessage } from '@/lib/types';
 
-// Force the AI to return this exact JSON structure
-const ResponseSchema = z.object({
-  role: z.enum(['Analyst', 'Strategist', 'Professor']),
-  content: z.string(),
+const citationSchema = z.object({
+  chunk_id: z.string(),
+  document_id: z.string(),
+  page_number: z.number().nullable().optional(),
+  quote: z.string().optional(),
 });
 
-export async function runDebateTurn(topic: string) {
-  
-  // --- TURN 1: THE ANALYST (Teal) ---
-  const analyst = await generateObject({
-    model: openai('gpt-4o-mini'),
-    schema: ResponseSchema,
-    system: `You are 'The Analyst' (Teal). 
-             Personality: Skeptical, data-obsessed. 
-             Mandate: Attack the topic based on sample size, bias, or cost. 
-             Constraint: Keep it under 60 words. Be ruthless.`,
-    prompt: `Topic: "${topic}". Give your risk assessment.`,
+const debateResponseSchema = z.object({
+  debateId: z.string(),
+  messages: z.array(
+    z.object({
+      id: z.string(),
+      role: z.string(),
+      content: z.string(),
+      citations: z.array(citationSchema).optional(),
+      created_at: z.string().nullable().optional(),
+    })
+  ),
+});
+
+const normalizeRole = (role: string): ChatMessage['role'] => {
+  const normalized = role.toLowerCase();
+  if (normalized === 'analyst' || normalized === 'strategist' || normalized === 'professor') {
+    return normalized;
+  }
+  if (normalized === 'ceo') {
+    return 'ceo';
+  }
+  return 'system';
+};
+
+export async function runDebateTurn(params: {
+  courseId: string;
+  debateId?: string | null;
+  userPrompt: string;
+}) {
+  const response = await fetch('/api/debate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      courseId: params.courseId,
+      debateId: params.debateId ?? undefined,
+      userPrompt: params.userPrompt,
+    }),
   });
 
-  // --- TURN 2: THE STRATEGIST (Orange) ---
-  const strategist = await generateObject({
-    model: openai('gpt-4o-mini'),
-    schema: ResponseSchema,
-    system: `You are 'The Strategist' (Orange). 
-             Personality: Visionary, warm, persuasive. 
-             Mandate: Disagree with the Analyst. Argue that "Data isn't everything." 
-             Constraint: Keep it under 60 words.`,
-    prompt: `Topic: "${topic}". 
-             The Analyst just said: "${analyst.object.content}". 
-             Rebut them immediately.`,
-  });
+  if (!response.ok) {
+    throw new Error('Failed to run debate turn.');
+  }
 
-  // --- TURN 3: THE PROFESSOR (Sage) ---
-  const professor = await generateObject({
-    model: openai('gpt-4o'), // Smarter model for synthesis
-    schema: ResponseSchema,
-    system: `You are 'The Professor' (Sage). 
-             Personality: Academic, rigorous. 
-             Mandate: Synthesize the conflict. Mention "Testable Hypotheses". 
-             Constraint: Ask the CEO (User) a difficult question to break the tie.`,
-    prompt: `Topic: "${topic}". 
-             Analyst argued: "${analyst.object.content}". 
-             Strategist argued: "${strategist.object.content}". 
-             Synthesize this.`,
-  });
+  const payload = debateResponseSchema.parse(await response.json());
+  const messages: ChatMessage[] = payload.messages.map((message) => ({
+    id: message.id,
+    role: normalizeRole(message.role),
+    content: message.content,
+    citations: message.citations ?? [],
+  }));
 
-  // Return the 3 messages with unique IDs
-  return [
-    { ...analyst.object, id: Date.now() + 1 },
-    { ...strategist.object, id: Date.now() + 2 },
-    { ...professor.object, id: Date.now() + 3 }
-  ];
+  return { debateId: payload.debateId, messages };
 }
