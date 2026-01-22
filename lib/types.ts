@@ -1,4 +1,5 @@
 export type AgentRole = 'analyst' | 'strategist' | 'professor' | 'ceo';
+export type ChatRole = AgentRole | 'system';
 
 export interface Course {
   id: string;
@@ -6,49 +7,60 @@ export interface Course {
   name: string;
   instructor: string;
   term: string;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface ScheduleItem {
   id: string;
   course_id: string;
   date: string;
-  type: 'Quiz' | 'Group Research';
+  type: string;
   title: string;
   due_time: string;
   is_major: boolean;
-  created_at: string;
+  created_at: string | null;
 }
 
-export interface DebateSession {
+export interface Debate {
   id: string;
   course_id: string;
   topic: string;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface DebateMessage {
   id: string;
-  session_id: string;
+  debate_id: string;
   role: AgentRole;
   content: string;
-  created_at: string;
+  created_at: string | null;
 }
 
-export interface Memo {
+export interface Citation {
+  chunk_id: string;
+  document_id: string;
+  page_number?: number | null;
+  modality?: 'text' | 'vision';
+  quote?: string;
+}
+
+export interface ExecutiveBrief {
   id: string;
+  debate_id?: string | null;
   course_id: string;
   topic: string | null;
   content: string;
-  created_at: string;
-  updated_at: string;
+  content_markdown?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface ChatMessage {
   id: string;
-  role: AgentRole;
+  role: ChatRole;
   content: string;
-  timestamp: Date;
+  citations?: Citation[];
+  timestamp?: Date;
   isTyping?: boolean;
 }
 

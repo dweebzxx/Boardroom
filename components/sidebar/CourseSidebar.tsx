@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { BookOpen, GraduationCap, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Course } from '@/lib/types';
@@ -83,7 +84,8 @@ export function CourseSidebar({
       </div>
 
       <div className="p-4 border-t border-vintage-slate-blue/20">
-        <button
+        <Link
+          href="/courses/new"
           className={cn(
             'w-full flex items-center justify-center gap-2 px-4 py-2.5',
             'text-sm text-vintage-cream/60 hover:text-vintage-cream',
@@ -94,7 +96,7 @@ export function CourseSidebar({
         >
           <Plus className="w-4 h-4" />
           Add Course
-        </button>
+        </Link>
       </div>
     </aside>
   );

@@ -4,8 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { CourseSidebar } from '@/components/sidebar/CourseSidebar';
 import { ContextPanel } from '@/components/context/ContextPanel';
 import { BoardroomPanel } from '@/components/boardroom/BoardroomPanel';
-import { getCourses, getScheduleItems, getMemo } from '@/lib/queries';
-import type { Course, ScheduleItem, Memo } from '@/lib/types';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { getCourses, getScheduleItems, getExecutiveBrief } from '@/lib/queries';
+import type { Course, ScheduleItem, ExecutiveBrief } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -13,7 +19,7 @@ export default function Dashboard() {
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-  const [memo, setMemo] = useState<Memo | null>(null);
+  const [executiveBrief, setExecutiveBrief] = useState<ExecutiveBrief | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,12 +44,12 @@ export default function Dashboard() {
       if (!selectedCourseId) return;
 
       try {
-        const [items, memoData] = await Promise.all([
+        const [items, briefData] = await Promise.all([
           getScheduleItems(selectedCourseId),
-          getMemo(selectedCourseId),
+          getExecutiveBrief(selectedCourseId),
         ]);
         setScheduleItems(items);
-        setMemo(memoData);
+        setExecutiveBrief(briefData);
         setSelectedTopic(null);
       } catch (error) {
         console.error('Failed to load course data:', error);
@@ -60,8 +66,8 @@ export default function Dashboard() {
     setSelectedTopic(topic);
   }, []);
 
-  const handleMemoUpdate = useCallback((updatedMemo: Memo) => {
-    setMemo(updatedMemo);
+  const handleBriefUpdate = useCallback((updatedBrief: ExecutiveBrief) => {
+    setExecutiveBrief(updatedBrief);
   }, []);
 
   if (isLoading) {
@@ -86,36 +92,55 @@ export default function Dashboard() {
             Executive Dashboard
           </span>
         </div>
-        {selectedCourseId && (
-          <div className="ml-auto flex items-center gap-2 text-sm text-vintage-cream/60">
-            {courses.find((c) => c.id === selectedCourseId)?.term}
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-4 text-sm text-vintage-cream/60">
+          {selectedCourseId && (
+            <span>{courses.find((c) => c.id === selectedCourseId)?.term}</span>
+          )}
+          <ThemeToggle />
+        </div>
       </header>
 
-      <div className="flex-1 grid grid-cols-[280px_1fr_400px] min-h-0">
-        <CourseSidebar
-          courses={courses}
-          selectedCourseId={selectedCourseId}
-          onSelectCourse={handleSelectCourse}
-        />
+      <div className="flex-1 min-h-0">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="h-full"
+          autoSaveId="boardroom-layout"
+        >
+          <ResizablePanel defaultSize={22} minSize={18} maxSize={30}>
+            <CourseSidebar
+              courses={courses}
+              selectedCourseId={selectedCourseId}
+              onSelectCourse={handleSelectCourse}
+            />
+          </ResizablePanel>
 
-        {selectedCourseId && (
-          <ContextPanel
-            courseId={selectedCourseId}
-            scheduleItems={scheduleItems}
-            selectedTopic={selectedTopic}
-            onSelectTopic={handleSelectTopic}
-            memo={memo}
-            onMemoUpdate={handleMemoUpdate}
-          />
-        )}
+          <ResizableHandle withHandle className="bg-vintage-slate-blue/20" />
 
-        {selectedCourseId && (
-          <div className="border-l border-vintage-slate-blue/20 h-full">
-            <BoardroomPanel topic={selectedTopic} courseId={selectedCourseId} />
-          </div>
-        )}
+          <ResizablePanel defaultSize={48} minSize={30}>
+            {selectedCourseId ? (
+              <BoardroomPanel topic={selectedTopic} courseId={selectedCourseId} />
+            ) : (
+              <div className="h-full border-l border-vintage-slate-blue/20 bg-vintage-slate-blue/10" />
+            )}
+          </ResizablePanel>
+
+          <ResizableHandle withHandle className="bg-vintage-slate-blue/20" />
+
+          <ResizablePanel defaultSize={30} minSize={22}>
+            {selectedCourseId ? (
+              <ContextPanel
+                courseId={selectedCourseId}
+                scheduleItems={scheduleItems}
+                selectedTopic={selectedTopic}
+                onSelectTopic={handleSelectTopic}
+                executiveBrief={executiveBrief}
+                onExecutiveBriefUpdate={handleBriefUpdate}
+              />
+            ) : (
+              <div className="h-full border-l border-vintage-slate-blue/20 bg-vintage-slate-blue/10" />
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

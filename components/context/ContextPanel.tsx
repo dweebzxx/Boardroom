@@ -2,15 +2,16 @@
 
 import { ScheduleCard } from './ScheduleCard';
 import { MemoWorkspace } from './MemoWorkspace';
-import type { ScheduleItem, Memo } from '@/lib/types';
+import { AssignmentContext } from './AssignmentContext';
+import type { ScheduleItem, ExecutiveBrief } from '@/lib/types';
 
 interface ContextPanelProps {
   courseId: string;
   scheduleItems: ScheduleItem[];
   selectedTopic: string | null;
   onSelectTopic: (topic: string) => void;
-  memo: Memo | null;
-  onMemoUpdate: (memo: Memo) => void;
+  executiveBrief: ExecutiveBrief | null;
+  onExecutiveBriefUpdate: (brief: ExecutiveBrief) => void;
 }
 
 export function ContextPanel({
@@ -18,8 +19,8 @@ export function ContextPanel({
   scheduleItems,
   selectedTopic,
   onSelectTopic,
-  memo,
-  onMemoUpdate,
+  executiveBrief,
+  onExecutiveBriefUpdate,
 }: ContextPanelProps) {
   return (
     <div className="h-full flex flex-col gap-4 p-4 overflow-hidden">
@@ -30,13 +31,16 @@ export function ContextPanel({
           selectedTopic={selectedTopic}
         />
       </div>
-      <div className="flex-1 min-h-0">
-        <MemoWorkspace
-          courseId={courseId}
-          scheduleItems={scheduleItems}
-          memo={memo}
-          onMemoUpdate={onMemoUpdate}
-        />
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-vintage pr-1">
+        <div className="space-y-4">
+          <AssignmentContext courseId={courseId} />
+          <MemoWorkspace
+            courseId={courseId}
+            scheduleItems={scheduleItems}
+            memo={executiveBrief}
+            onMemoUpdate={onExecutiveBriefUpdate}
+          />
+        </div>
       </div>
     </div>
   );
